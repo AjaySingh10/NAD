@@ -33,7 +33,7 @@ exec nam ex2.nam &
 exit 0
 }
 
-#Creates 3 nodes 
+#Creates 4 nodes 
 set n0 [$ns node]
 set n1 [$ns node]
 set n2 [$ns node]
@@ -48,22 +48,33 @@ $ns duplex-link $n0 $n2 0.5Mb 20ms DropTail
 $ns duplex-link $n1 $n2 0.5Mb 20ms DropTail
 $ns duplex-link $n2 $n3 0.5Mb 20ms DropTail
 
+$ns queue-limit $n0 $n2 10
+#Set TCP  Connection between n(0) and n(3):
+	set tcp [new Agent/TCP]
+	$ns attach-agent $n0 $tcp
+	set sink [new Agent/TCPSink]
+	$ns attach-agent $n3 $sink
+	$ns connect $tcp $sink
+#Attach FTP Application over TCP:
+	set ftp [new Application/FTP]
+	$ftp attach-agent $tcp
+	$ftp set type_ FTP
+#Set UDP Connection between n(1) and n(3):
+	set udp [new Agent/UDP]
+	$ns attach-agent $n1 $udp
+	set null [new Agent/Null]
+	$ns attach-agent $n3 $null
+	$ns connect $udp $null
+#Attach CBR Traffic over UDP:
+	set cbr [new Application/Traffic/CBR]
+	$cbr set packetSize_ 500						
+	$cbr set interval_ 0.005
+	$cbr attach-agent $udp
+#Schedule Events:
+	$ns at 0.5 "$ftp start"
+	$ns at 1.0 "$cbr start"
+	$ns at 9.0 "$cbr stop"
+	$ns at 9.5 "$ftp stop"
+	$ns at 10.0 "finish"
+	$ns run
 
-set tcp0 [new Agent/TCP] 
-$ns attach-agent $n0 $tcp0
-set udp1 [new Agent/UDP] 
-$ns attach-agent $n1 $udp1
-set null0 [new Agent/Null] 
-$ns attach-agent $n3 $null0
-set sink0 [new Agent/TCPSink] 
-$ns attach-agent $n3 $sink0
-set ftp0 [new Application/FTP]
-$ftp0 attach-agent $tcp0
-set cbr1 [new Application/Traffic/CBR]
-$cbr1 attach-agent $udp1
-$ns connect $tcp0 $sink0
-$ns connect $udp1 $null0
-$ns at 0.1 "$cbr1 start"
-$ns at 0.2 "$ftp0 start"
-$ns at 0.5 "finish"
-$ns run
