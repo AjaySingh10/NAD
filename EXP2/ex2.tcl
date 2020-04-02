@@ -39,8 +39,8 @@ set n1 [$ns node]
 set n2 [$ns node]
 set n3 [$ns node]
 
-$ns color 1 Blue
-$ns color 2 Red
+$ns color 1 Red
+$ns color 2 Blue
 
 #Establishing links
 #change the bandwidth here
@@ -49,12 +49,25 @@ $ns duplex-link $n1 $n2 0.5Mb 20ms DropTail
 $ns duplex-link $n2 $n3 0.5Mb 20ms DropTail
 
 $ns queue-limit $n0 $n2 10
+
+
+$ns duplex-link-op $n0 $n2 orient right-down 
+$ns duplex-link-op $n1 $n2 orient right-up 
+$ns duplex-link-op $n2 $n3 orient right 
+
+$ns duplex-link-op $n0 $n2 color red
+$ns duplex-link-op $n1 $n2 color blue
+
 #Set TCP  Connection between n(0) and n(3):
 	set tcp [new Agent/TCP]
 	$ns attach-agent $n0 $tcp
 	set sink [new Agent/TCPSink]
 	$ns attach-agent $n3 $sink
 	$ns connect $tcp $sink
+	$tcp set fid_ 1
+
+
+
 #Attach FTP Application over TCP:
 	set ftp [new Application/FTP]
 	$ftp attach-agent $tcp
@@ -65,10 +78,12 @@ $ns queue-limit $n0 $n2 10
 	set null [new Agent/Null]
 	$ns attach-agent $n3 $null
 	$ns connect $udp $null
+	$udp set fid_ 2
+
 #Attach CBR Traffic over UDP:
 	set cbr [new Application/Traffic/CBR]
 	$cbr set packetSize_ 500						
-	$cbr set interval_ 0.005
+	$cbr set interval_ 0.05
 	$cbr attach-agent $udp
 #Schedule Events:
 	$ns at 0.5 "$ftp start"
