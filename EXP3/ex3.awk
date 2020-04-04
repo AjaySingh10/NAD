@@ -50,9 +50,9 @@ tcpSize2 = pktsize;
 
 END {
 
-totaltcp1=numTCP1*tcpSize1*8;
+totaltcp1=numTCP2*tcpSize1*8;
 
-totaltcp2=numTCP2*tcpSize2*8;
+totaltcp2=numTCP1*tcpSize2*8;
 
 throughputtcp1= totaltcp1/24; # because simulation time is 24.5   0.5 = 24
 
